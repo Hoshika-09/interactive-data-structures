@@ -1,0 +1,2931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interactive Data Structures Simulator</title>
+
+<style>
+:root{
+  --jade:#102b2a;
+  --jade2:#163b38;
+  --jade3:#1f4a45;
+  --cream:#f3e8d0;
+  --cream2:#e8d7b8;
+  --paper:#f8f0df;
+  --gold:#c6a15b;
+  --gold2:#d7bb7a;
+  --wine:#6e3b47;
+  --wine2:#8a5360;
+  --plum:#542f3b;
+  --ink:#241f1b;
+  --muted:#b9b09e;
+  --white:#fff9ed;
+  --green:#5e9b7a;
+  --danger:#a85d65;
+  --shadow:0 18px 45px rgba(0,0,0,.28);
+  --radius:20px;
+}
+
+*{box-sizing:border-box}
+
+html{scroll-behavior:smooth}
+
+body{
+  margin:0;
+  min-height:100vh;
+  color:var(--cream);
+  font-family:Georgia,"Times New Roman",serif;
+  background:
+    radial-gradient(circle at 10% 10%,rgba(198,161,91,.09),transparent 28%),
+    radial-gradient(circle at 90% 20%,rgba(110,59,71,.16),transparent 30%),
+    radial-gradient(circle at 50% 100%,rgba(31,74,69,.4),transparent 35%),
+    linear-gradient(135deg,#0b2020,#102b2a 48%,#132725);
+  overflow-x:hidden;
+}
+
+body:before,
+body:after{
+  content:"";
+  position:fixed;
+  pointer-events:none;
+  z-index:-1;
+  opacity:.14;
+}
+
+body:before{
+  width:420px;
+  height:420px;
+  right:-130px;
+  top:90px;
+  border:1px solid var(--gold);
+  border-radius:48% 52% 65% 35%;
+  transform:rotate(24deg);
+  box-shadow:
+    -45px 70px 0 -20px transparent,
+    -80px 100px 0 -30px rgba(198,161,91,.2);
+}
+
+body:after{
+  width:260px;
+  height:520px;
+  left:-100px;
+  bottom:0;
+  border-right:1px solid var(--gold);
+  border-radius:50%;
+  transform:rotate(-25deg);
+}
+
+button,input{
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
+}
+
+.app{
+  width:min(1420px,94%);
+  margin:auto;
+  padding:30px 0 50px;
+}
+
+/* HEADER */
+.header{
+  text-align:center;
+  padding:28px 15px 25px;
+}
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:9px;
+  padding:9px 18px;
+  border:1px solid rgba(198,161,91,.55);
+  border-radius:999px;
+  color:var(--gold2);
+  background:rgba(16,43,42,.7);
+  box-shadow:0 8px 25px rgba(0,0,0,.15);
+  font-size:.78rem;
+  letter-spacing:1.8px;
+  text-transform:uppercase;
+}
+
+.badge:before{
+  content:"✦";
+  color:var(--gold);
+}
+
+h1{
+  margin:18px 0 8px;
+  font-size:clamp(2rem,5vw,4.2rem);
+  line-height:1.05;
+  color:var(--cream);
+  text-shadow:0 3px 25px rgba(0,0,0,.25);
+}
+
+.title-accent{
+  color:var(--gold2);
+}
+
+.subtitle{
+  margin:0;
+  color:#cfc3ac;
+  font-size:1rem;
+  letter-spacing:2px;
+}
+
+.ornament{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:15px;
+  margin:18px auto 0;
+  max-width:430px;
+  color:var(--gold);
+}
+
+.ornament:before,
+.ornament:after{
+  content:"";
+  height:1px;
+  flex:1;
+  background:linear-gradient(90deg,transparent,var(--gold));
+}
+
+.ornament:after{
+  background:linear-gradient(90deg,var(--gold),transparent);
+}
+
+/* PROGRESS */
+.progress{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  margin:10px 0 25px;
+}
+
+.progress-btn{
+  border:1px solid rgba(198,161,91,.25);
+  background:rgba(21,50,48,.8);
+  color:#9eaa9f;
+  border-radius:14px;
+  padding:12px 8px;
+  transition:.25s;
+}
+
+.progress-btn:not(:disabled):hover{
+  transform:translateY(-2px);
+  border-color:var(--gold);
+  color:var(--cream);
+}
+
+.progress-btn.active{
+  background:linear-gradient(135deg,var(--wine),var(--plum));
+  border-color:var(--gold);
+  color:var(--white);
+  box-shadow:0 8px 25px rgba(110,59,71,.25);
+}
+
+.progress-btn.done{
+  color:var(--gold2);
+}
+
+.progress-btn:disabled{
+  cursor:not-allowed;
+  opacity:.45;
+}
+
+/* MAIN CARDS */
+.panel{
+  background:
+    linear-gradient(135deg,rgba(31,74,69,.96),rgba(16,43,42,.96));
+  border:1px solid rgba(198,161,91,.25);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  position:relative;
+}
+
+.panel:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(90deg,transparent 49%,rgba(198,161,91,.025) 50%,transparent 51%);
+  opacity:.5;
+}
+
+.panel-inner{
+  position:relative;
+  padding:28px;
+}
+
+.section-title{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:0 0 8px;
+  color:var(--cream);
+  font-size:1.55rem;
+}
+
+.section-title .icon{
+  color:var(--gold2);
+}
+
+.section-subtitle{
+  color:#bcb7a9;
+  margin:0 0 25px;
+  line-height:1.6;
+}
+
+.divider{
+  height:1px;
+  background:linear-gradient(90deg,var(--gold),rgba(198,161,91,.08),transparent);
+  margin:24px 0;
+}
+
+/* NAV */
+.nav-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-bottom:22px;
+}
+
+.btn{
+  border:1px solid rgba(198,161,91,.4);
+  border-radius:12px;
+  padding:11px 17px;
+  color:var(--cream);
+  background:#1c3836;
+  transition:.25s;
+  box-shadow:0 5px 15px rgba(0,0,0,.12);
+}
+
+.btn:hover{
+  transform:translateY(-2px);
+  border-color:var(--gold);
+}
+
+.btn.primary{
+  color:#fff8e9;
+  background:linear-gradient(135deg,var(--wine),var(--plum));
+  border-color:rgba(215,187,122,.6);
+}
+
+.btn.gold{
+  color:#2a2117;
+  background:linear-gradient(135deg,var(--gold2),var(--gold));
+  border-color:var(--gold2);
+}
+
+.btn.green{
+  background:linear-gradient(135deg,#426e59,#315645);
+  border-color:#76a58a;
+}
+
+.btn.danger{
+  background:#59333d;
+  border-color:#98616b;
+}
+
+.btn:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+  transform:none;
+}
+
+/* FORM */
+.form-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:18px;
+}
+
+.form-grid.three{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+
+.field label{
+  color:var(--cream2);
+  font-size:.92rem;
+}
+
+.field input,
+.field select{
+  width:100%;
+  border:1px solid rgba(198,161,91,.3);
+  outline:none;
+  border-radius:12px;
+  background:#0f2928;
+  color:var(--cream);
+  padding:12px 14px;
+  transition:.2s;
+}
+
+.field input:focus,
+.field select:focus{
+  border-color:var(--gold);
+  box-shadow:0 0 0 3px rgba(198,161,91,.1);
+}
+
+.help{
+  font-size:.8rem;
+  color:#a9b2a7;
+  line-height:1.5;
+}
+
+.error{
+  display:none;
+  padding:11px 14px;
+  margin-top:15px;
+  border:1px solid rgba(168,93,101,.6);
+  background:rgba(110,59,71,.28);
+  color:#f2c6c5;
+  border-radius:11px;
+}
+
+.error.show{display:block}
+
+/* TYPE SELECT */
+.type-choice{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:16px;
+  margin-bottom:22px;
+}
+
+.type-card{
+  position:relative;
+  padding:23px;
+  border:1px solid rgba(198,161,91,.22);
+  border-radius:17px;
+  background:#142f2d;
+  color:var(--cream);
+  text-align:left;
+  transition:.25s;
+}
+
+.type-card:hover{
+  transform:translateY(-3px);
+  border-color:var(--gold);
+}
+
+.type-card.selected{
+  background:linear-gradient(135deg,rgba(110,59,71,.65),rgba(31,74,69,.95));
+  border-color:var(--gold);
+  box-shadow:0 10px 30px rgba(0,0,0,.2);
+}
+
+.type-card .big{
+  font-size:2rem;
+  color:var(--gold2);
+}
+
+.type-card strong{
+  display:block;
+  margin-top:8px;
+  font-size:1.15rem;
+}
+
+/* ARRAY INPUT */
+.value-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:10px;
+  margin-top:16px;
+}
+
+.value-input{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+
+.value-input span{
+  font-size:.78rem;
+  color:var(--gold2);
+}
+
+.value-input input{
+  min-width:0;
+}
+
+/* SUMMARY */
+.summary-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:12px;
+  margin:18px 0;
+}
+
+.summary-item{
+  padding:15px;
+  border:1px solid rgba(198,161,91,.2);
+  border-radius:14px;
+  background:rgba(10,29,29,.4);
+}
+
+.summary-item small{
+  display:block;
+  color:#9fa99f;
+  margin-bottom:5px;
+}
+
+.summary-item strong{
+  color:var(--cream);
+}
+
+/* ARRAY VISUAL */
+.array-wrapper{
+  padding:22px;
+  border:1px solid rgba(198,161,91,.25);
+  border-radius:18px;
+  background:
+    linear-gradient(135deg,#f2e4c8,#e6d3ad);
+  color:var(--ink);
+  box-shadow:inset 0 0 30px rgba(109,73,34,.08);
+  overflow:hidden;
+}
+
+.array-heading{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:15px;
+}
+
+.array-heading strong{
+  color:#513a29;
+}
+
+.array-note{
+  font-size:.8rem;
+  color:#755f49;
+}
+
+.array-scroll{
+  overflow-x:auto;
+  padding-bottom:8px;
+}
+
+.array-row{
+  display:flex;
+  gap:8px;
+  min-width:max-content;
+  align-items:stretch;
+}
+
+.cell-column{
+  width:110px;
+  min-width:110px;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+
+.cell-label{
+  text-align:center;
+  font-size:.75rem;
+  color:#725b40;
+  font-weight:bold;
+}
+
+.array-cell{
+  min-height:72px;
+  width:100%;
+  border:1px solid #b18c4c;
+  border-radius:12px;
+  background:#f9f0dc;
+  color:#33291f;
+  padding:9px 7px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-weight:bold;
+  line-height:1.15;
+  overflow:hidden;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+  white-space:normal;
+  transition:.3s;
+  box-shadow:0 5px 10px rgba(83,57,25,.12);
+}
+
+.array-cell .value{
+  max-width:100%;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+  line-height:1.15;
+}
+
+.array-cell.normal{}
+
+.array-cell.selected{
+  background:#e5c979;
+  border-color:#7c5c25;
+  transform:translateY(-4px);
+  box-shadow:0 10px 20px rgba(105,73,22,.25);
+}
+
+.array-cell.comparing{
+  background:#d7c087;
+  border-color:#8a6b2c;
+  box-shadow:0 0 0 3px rgba(198,161,91,.25);
+}
+
+.array-cell.shifted{
+  background:#c8d5c6;
+  border-color:#607c6a;
+  transform:translateX(5px);
+}
+
+.array-cell.inserted{
+  background:#a9d0bd;
+  border-color:#42755d;
+  transform:scale(1.04);
+}
+
+.array-cell.deleted{
+  background:#e2b5b5;
+  border-color:#95545e;
+  opacity:.65;
+}
+
+.array-cell.found{
+  background:#a8cfb5;
+  border-color:#3f7656;
+  transform:translateY(-4px);
+  box-shadow:0 10px 20px rgba(51,104,73,.25);
+}
+
+.matrix{
+  display:grid;
+  gap:8px;
+}
+
+.matrix-row{
+  display:flex;
+  gap:8px;
+}
+
+.matrix-label{
+  width:36px;
+  min-width:36px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:bold;
+  color:#755f49;
+}
+
+.matrix-cell{
+  flex:1;
+  min-width:85px;
+}
+
+/* OPERATION CARDS */
+.operations-grid{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:13px;
+}
+
+.operation-card{
+  min-height:225px;
+  padding:20px;
+  border:1px solid rgba(198,161,91,.22);
+  border-radius:18px;
+  background:
+    linear-gradient(145deg,rgba(243,232,208,.97),rgba(226,209,174,.97));
+  color:var(--ink);
+  text-align:left;
+  transition:.3s;
+  box-shadow:0 12px 25px rgba(0,0,0,.16);
+  position:relative;
+  overflow:hidden;
+}
+
+.operation-card:before{
+  content:"";
+  position:absolute;
+  width:70px;
+  height:70px;
+  right:-25px;
+  top:-25px;
+  border:1px solid rgba(110,59,71,.18);
+  border-radius:50%;
+}
+
+.operation-card:hover{
+  transform:translateY(-7px);
+  border-color:var(--gold);
+  box-shadow:0 18px 35px rgba(0,0,0,.25);
+}
+
+.operation-icon{
+  font-size:2rem;
+  color:var(--wine);
+  margin-bottom:13px;
+}
+
+.operation-card h3{
+  margin:0 0 8px;
+  color:#4d302e;
+  font-size:1.05rem;
+}
+
+.operation-card p{
+  color:#6e5a49;
+  line-height:1.5;
+  font-size:.86rem;
+  margin:0 0 18px;
+}
+
+.complexity{
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:999px;
+  background:#e8d4b2;
+  border:1px solid #c4a568;
+  color:#624b28;
+  font-size:.72rem;
+}
+
+/* OPERATION AREA */
+.operation-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1.4fr) minmax(270px,.6fr);
+  gap:20px;
+}
+
+.operation-main,
+.info-card{
+  border:1px solid rgba(198,161,91,.22);
+  border-radius:17px;
+  background:rgba(17,47,45,.7);
+  padding:22px;
+}
+
+.info-card{
+  background:linear-gradient(145deg,#efe2c5,#dfcda9);
+  color:var(--ink);
+}
+
+.info-card h3{
+  margin-top:0;
+  color:#543932;
+}
+
+.info-card p,
+.info-card li{
+  color:#695746;
+  line-height:1.55;
+}
+
+.info-card ul{
+  padding-left:20px;
+}
+
+.status{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:10px 14px;
+  border-radius:11px;
+  background:rgba(7,24,24,.5);
+  border:1px solid rgba(198,161,91,.18);
+  color:#c9c0ad;
+  margin:15px 0;
+}
+
+.status-dot{
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  background:var(--gold);
+  box-shadow:0 0 10px rgba(198,161,91,.4);
+}
+
+.status.success .status-dot{background:var(--green)}
+.status.error-state .status-dot{background:var(--danger)}
+.status.running .status-dot{background:var(--gold2)}
+
+/* STEPS */
+.steps{
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+  margin-top:18px;
+}
+
+.step{
+  padding:13px 15px;
+  border-left:3px solid rgba(198,161,91,.25);
+  background:rgba(5,22,22,.25);
+  border-radius:0 10px 10px 0;
+  color:#c5beae;
+  animation:fadeIn .3s ease;
+}
+
+.step.active{
+  border-left-color:var(--gold);
+  background:rgba(198,161,91,.08);
+  color:var(--cream);
+}
+
+.step strong{
+  color:var(--gold2);
+}
+
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(5px)}
+  to{opacity:1;transform:none}
+}
+
+/* RESULT */
+.result{
+  display:none;
+  margin-top:20px;
+  padding:22px;
+  border:1px solid var(--gold);
+  border-radius:17px;
+  background:
+    linear-gradient(135deg,rgba(67,94,70,.82),rgba(110,59,71,.7));
+  box-shadow:0 0 30px rgba(198,161,91,.12);
+}
+
+.result.show{display:block}
+
+.result.bad{
+  background:linear-gradient(135deg,rgba(110,59,71,.78),rgba(84,47,59,.9));
+  border-color:#b8757c;
+}
+
+.result h3{
+  margin:0 0 9px;
+  color:var(--gold2);
+  letter-spacing:1px;
+}
+
+.result-value{
+  font-size:clamp(1.3rem,3vw,2rem);
+  font-weight:bold;
+  color:#fff6df;
+  overflow-wrap:anywhere;
+}
+
+.result p{
+  color:#ded5c4;
+  margin-bottom:0;
+}
+
+/* BINARY MARKERS */
+.binary-visual{
+  margin-top:18px;
+}
+
+.marker-row{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(70px,1fr));
+  gap:7px;
+}
+
+.marker-cell{
+  min-height:82px;
+  position:relative;
+  border:1px solid #b18c4c;
+  background:#f8eed8;
+  color:#33291f;
+  border-radius:10px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  padding:9px 5px;
+  overflow:hidden;
+}
+
+.marker-cell .v{
+  font-weight:bold;
+  max-width:100%;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+  text-align:center;
+}
+
+.marker-cell.range{
+  background:#e7d9b9;
+}
+
+.marker-cell.mid{
+  background:#d7bd78;
+  border-color:#725521;
+  transform:translateY(-4px);
+}
+
+.marker-cell.out{
+  opacity:.38;
+}
+
+.marker-tag{
+  position:absolute;
+  top:3px;
+  font-size:.65rem;
+  color:#633f38;
+  font-weight:bold;
+}
+
+/* FORMULA */
+.formula{
+  margin:15px 0;
+  padding:17px;
+  border-radius:13px;
+  background:#0d2827;
+  border:1px solid rgba(198,161,91,.2);
+  color:var(--gold2);
+  font-family:"Courier New",monospace;
+  overflow-x:auto;
+}
+
+.calculation{
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+}
+
+.calc-line{
+  padding:10px 13px;
+  border-radius:10px;
+  background:rgba(5,22,22,.3);
+  color:#d2c8b7;
+}
+
+.calc-line strong{color:var(--gold2)}
+
+/* FOOTER */
+footer{
+  text-align:center;
+  padding:28px 10px 0;
+  color:#8f9d93;
+  font-size:.85rem;
+}
+
+footer .gold{color:var(--gold2)}
+
+/* HIDDEN */
+.view{display:none}
+.view.active{display:block}
+
+/* RESPONSIVE */
+@media(max-width:1100px){
+  .operations-grid{grid-template-columns:repeat(3,1fr)}
+}
+
+@media(max-width:800px){
+  .form-grid,
+  .form-grid.three,
+  .operation-layout{
+    grid-template-columns:1fr;
+  }
+
+  .operations-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .progress-btn{
+    font-size:.75rem;
+  }
+}
+
+@media(max-width:560px){
+  .app{width:94%;padding-top:12px}
+  .panel-inner{padding:18px}
+  .type-choice,
+  .operations-grid{
+    grid-template-columns:1fr;
+  }
+
+  .progress{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  h1{font-size:2rem}
+  .nav-row .btn{flex:1 1 100%}
+  .cell-column{width:92px;min-width:92px}
+}
+
+/* Decorative leaf */
+.leaf{
+  position:absolute;
+  width:42px;
+  height:20px;
+  border:1px solid rgba(198,161,91,.28);
+  border-radius:100% 0 100% 0;
+  transform:rotate(30deg);
+  opacity:.5;
+}
+
+.leaf.one{right:25px;top:25px}
+.leaf.two{right:60px;top:42px;transform:rotate(65deg) scale(.7)}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<header class="header">
+  <div class="badge">B.Tech Data Structures Project</div>
+  <h1>Interactive <span class="title-accent">Data Structures</span> Simulator</h1>
+  <p class="subtitle">Explore • Visualize • Understand</p>
+  <div class="ornament">✦</div>
+</header>
+
+<nav class="progress" id="progress">
+  <button class="progress-btn active" data-stage="setup">01 · Setup</button>
+  <button class="progress-btn" data-stage="array" disabled>02 · Array</button>
+  <button class="progress-btn" data-stage="operations" disabled>03 · Operation</button>
+  <button class="progress-btn" data-stage="simulation" disabled>04 · Simulation</button>
+</nav>
+
+<!-- SETUP -->
+<section id="setupView" class="view active">
+  <div class="panel">
+    <div class="panel-inner">
+      <div class="leaf one"></div>
+      <div class="leaf two"></div>
+
+      <h2 class="section-title"><span class="icon">⚗</span> Array Setup</h2>
+      <p class="section-subtitle">
+        Begin by creating the array you want to explore. Values may be numbers, letters or text.
+      </p>
+
+      <div class="type-choice">
+        <button class="type-card selected" id="oneDChoice">
+          <span class="big">Ⅰ</span>
+          <strong>One-Dimensional Array</strong>
+          <span class="help">A linear sequence of elements.</span>
+        </button>
+
+        <button class="type-card" id="twoDChoice">
+          <span class="big">Ⅱ</span>
+          <strong>Two-Dimensional Array</strong>
+          <span class="help">A matrix organized by rows and columns.</span>
+        </button>
+      </div>
+
+      <div id="oneDSetup">
+        <div class="form-grid">
+          <div class="field">
+            <label>Total Number of Elements</label>
+            <input id="oneDCount" type="number" min="1" max="30" placeholder="Example: 5">
+          </div>
+          <div class="field">
+            <label>Base Address</label>
+            <input id="oneDBase" type="number" step="any" placeholder="Example: 1000">
+          </div>
+          <div class="field">
+            <label>Element Size (bytes)</label>
+            <input id="oneDSize" type="number" min="1" step="any" placeholder="Example: 4">
+          </div>
+        </div>
+        <div id="oneDValues"></div>
+      </div>
+
+      <div id="twoDSetup" style="display:none">
+        <div class="form-grid">
+          <div class="field">
+            <label>Number of Rows</label>
+            <input id="twoDRows" type="number" min="1" max="15" placeholder="Example: 3">
+          </div>
+          <div class="field">
+            <label>Number of Columns</label>
+            <input id="twoDCols" type="number" min="1" max="15" placeholder="Example: 3">
+          </div>
+          <div class="field">
+            <label>Base Address</label>
+            <input id="twoDBase" type="number" step="any" placeholder="Example: 1000">
+          </div>
+          <div class="field">
+            <label>Element Size (bytes)</label>
+            <input id="twoDSize" type="number" min="1" step="any" placeholder="Example: 4">
+          </div>
+        </div>
+        <div id="twoDValues"></div>
+      </div>
+
+      <div id="setupError" class="error"></div>
+
+      <div class="divider"></div>
+
+      <button class="btn primary" id="createArrayBtn">Create Array →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ARRAY -->
+<section id="arrayView" class="view">
+  <div class="panel">
+    <div class="panel-inner">
+      <div class="nav-row">
+        <button class="btn" id="backSetupBtn">← Back to Setup</button>
+        <button class="btn primary" id="continueOpsBtn">Continue to Operations →</button>
+        <button class="btn danger" id="newArrayFromArray">＋ Create New Array</button>
+      </div>
+
+      <h2 class="section-title"><span class="icon">🌿</span> Created Array</h2>
+      <p class="section-subtitle">Your array is ready. Review it before choosing a simulation.</p>
+
+      <div id="arraySummary"></div>
+      <div id="arrayDisplay"></div>
+    </div>
+  </div>
+</section>
+
+<!-- OPERATIONS -->
+<section id="operationsView" class="view">
+  <div class="panel">
+    <div class="panel-inner">
+      <div class="nav-row">
+        <button class="btn" id="backArrayBtn">← Back to Array</button>
+        <button class="btn danger" id="newArrayFromOps">＋ Create New Array</button>
+      </div>
+
+      <h2 class="section-title"><span class="icon">🎯</span> What would you like to perform?</h2>
+      <p class="section-subtitle">Choose an operation to visualize using your created array.</p>
+
+      <div class="operations-grid">
+        <button class="operation-card" data-operation="address">
+          <div class="operation-icon">⌖</div>
+          <h3>Array Address Calculation</h3>
+          <p>Locate an element using its memory address formula.</p>
+          <span class="complexity">O(1)</span>
+        </button>
+
+        <button class="operation-card" data-operation="insert">
+          <div class="operation-icon">＋</div>
+          <h3>Array Insertion</h3>
+          <p>Place one new element while demonstrating the required shifting.</p>
+          <span class="complexity">O(n)</span>
+        </button>
+
+        <button class="operation-card" data-operation="delete">
+          <div class="operation-icon">−</div>
+          <h3>Array Deletion</h3>
+          <p>Remove one element and visualize the remaining values shifting.</p>
+          <span class="complexity">O(n)</span>
+        </button>
+
+        <button class="operation-card" data-operation="linear">
+          <div class="operation-icon">⌕</div>
+          <h3>Linear Search</h3>
+          <p>Inspect elements sequentially until the target is found.</p>
+          <span class="complexity">O(n)</span>
+        </button>
+
+        <button class="operation-card" data-operation="binary">
+          <div class="operation-icon">◇</div>
+          <h3>Binary Search</h3>
+          <p>Search sorted data by repeatedly reducing the search range.</p>
+          <span class="complexity">O(log n)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SIMULATION -->
+<section id="simulationView" class="view">
+  <div class="panel">
+    <div class="panel-inner">
+      <div class="nav-row">
+        <button class="btn" id="backOpsBtn">← Back to Operations</button>
+        <button class="btn" id="resetOperationBtn">↻ Reset Operation</button>
+        <button class="btn danger" id="newArrayFromSim">＋ Create New Array</button>
+      </div>
+
+      <h2 class="section-title" id="operationTitle">Simulation</h2>
+      <p class="section-subtitle" id="operationSubtitle"></p>
+
+      <div id="operationContent"></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="ornament">✦</div>
+  <p>Interactive Data Structures Simulator</p>
+  <p class="gold">AI-Assisted Development • B.Tech Data Structures Project</p>
+</footer>
+
+</div>
+
+<script>
+"use strict";
+
+/* =========================================================
+   GLOBAL STATE
+========================================================= */
+
+const state = {
+  type: "1D",
+  data: [],
+  rows: 0,
+  cols: 0,
+  base: 0,
+  size: 1,
+  currentOperation: null,
+  originalData: [],
+  simulation: {
+    steps: [],
+    index: -1,
+    timer: null,
+    paused: false,
+    running: false
+  }
+};
+
+/* =========================================================
+   DOM HELPERS
+========================================================= */
+
+const $ = id => document.getElementById(id);
+
+function escapeHTML(value){
+  return String(value)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+function showError(message){
+  const box = $("setupError");
+  box.textContent = message;
+  box.classList.add("show");
+}
+
+function clearError(){
+  $("setupError").classList.remove("show");
+  $("setupError").textContent = "";
+}
+
+function valueEqual(a,b){
+  return String(a).trim() === String(b).trim();
+}
+
+function isNumericString(v){
+  const s = String(v).trim();
+  return s !== "" && Number.isFinite(Number(s));
+}
+
+function compareValues(a,b){
+  const aNum = isNumericString(a);
+  const bNum = isNumericString(b);
+
+  if(aNum && bNum){
+    return Number(a) - Number(b);
+  }
+
+  return String(a).localeCompare(String(b), undefined, {
+    numeric:true,
+    sensitivity:"base"
+  });
+}
+
+function isSorted(arr){
+  for(let i=1;i<arr.length;i++){
+    if(compareValues(arr[i-1],arr[i]) > 0) return false;
+  }
+  return true;
+}
+
+function clone2D(data){
+  return data.map(row => row.slice());
+}
+
+function flattenData(){
+  if(state.type === "1D") return state.data.slice();
+  return state.data.flat();
+}
+
+function getRowCol(flatIndex, cols=state.cols){
+  return {
+    row: Math.floor(flatIndex / cols),
+    col: flatIndex % cols
+  };
+}
+
+function formatValue(v){
+  return escapeHTML(v);
+}
+
+function autoFontClass(value){
+  const length = String(value).length;
+  if(length > 22) return "very-long";
+  if(length > 14) return "long";
+  return "";
+}
+
+/* =========================================================
+   VIEW / NAVIGATION
+========================================================= */
+
+const views = {
+  setup: $("setupView"),
+  array: $("arrayView"),
+  operations: $("operationsView"),
+  simulation: $("simulationView")
+};
+
+function stageNumber(stage){
+  return {setup:1,array:2,operations:3,simulation:4}[stage];
+}
+
+function goTo(stage){
+  Object.values(views).forEach(v => v.classList.remove("active"));
+  views[stage].classList.add("active");
+
+  document.querySelectorAll(".progress-btn").forEach(btn=>{
+    const target = btn.dataset.stage;
+    const n = stageNumber(target);
+    const current = stageNumber(stage);
+
+    btn.classList.toggle("active",target===stage);
+    btn.classList.toggle("done",n<current);
+    btn.disabled = n>current || (n>2 && state.data.length===0);
+  });
+
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+document.querySelectorAll(".progress-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    const stage = btn.dataset.stage;
+
+    if(stage==="setup"){
+      goTo("setup");
+    }else if(stage==="array" && state.data.length){
+      renderArrayPage();
+      goTo("array");
+    }else if(stage==="operations" && state.data.length){
+      goTo("operations");
+    }else if(stage==="simulation" && state.currentOperation){
+      goTo("simulation");
+    }
+  });
+});
+
+/* =========================================================
+   ARRAY TYPE SETUP
+========================================================= */
+
+$("oneDChoice").addEventListener("click",()=>{
+  state.type="1D";
+  $("oneDChoice").classList.add("selected");
+  $("twoDChoice").classList.remove("selected");
+  $("oneDSetup").style.display="";
+  $("twoDSetup").style.display="none";
+});
+
+$("twoDChoice").addEventListener("click",()=>{
+  state.type="2D";
+  $("twoDChoice").classList.add("selected");
+  $("oneDChoice").classList.remove("selected");
+  $("oneDSetup").style.display="none";
+  $("twoDSetup").style.display="";
+});
+
+$("oneDCount").addEventListener("input",render1DInputs);
+$("twoDRows").addEventListener("input",render2DInputs);
+$("twoDCols").addEventListener("input",render2DInputs);
+
+function render1DInputs(){
+  const count = Number($("oneDCount").value);
+  const container = $("oneDValues");
+
+  if(!Number.isInteger(count) || count<1 || count>30){
+    container.innerHTML="";
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="divider"></div>
+    <h3 class="section-title" style="font-size:1.15rem">Element Values</h3>
+    <p class="help">Enter numbers, letters, words or long text. Values are stored exactly as entered.</p>
+    <div class="value-grid">
+      ${Array.from({length:count},(_,i)=>`
+        <div class="value-input">
+          <span>A[${i}]</span>
+          <input type="text" id="v1d_${i}" placeholder="Value ${i}">
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function render2DInputs(){
+  const rows = Number($("twoDRows").value);
+  const cols = Number($("twoDCols").value);
+  const container = $("twoDValues");
+
+  if(!Number.isInteger(rows)||!Number.isInteger(cols)||rows<1||cols<1||rows>15||cols>15){
+    container.innerHTML="";
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="divider"></div>
+    <h3 class="section-title" style="font-size:1.15rem">
+      Matrix Values
+      <span class="complexity">Total: ${rows*cols}</span>
+    </h3>
+    <div class="value-grid">
+      ${Array.from({length:rows*cols},(_,i)=>{
+        const r=Math.floor(i/cols);
+        const c=i%cols;
+        return `
+          <div class="value-input">
+            <span>A[${r}][${c}]</span>
+            <input type="text" id="v2d_${r}_${c}" placeholder="Value">
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
+/* =========================================================
+   CREATE ARRAY
+========================================================= */
+
+$("createArrayBtn").addEventListener("click",createArray);
+
+function createArray(){
+  clearError();
+
+  if(state.type==="1D"){
+    const count=Number($("oneDCount").value);
+    const base=Number($("oneDBase").value);
+    const size=Number($("oneDSize").value);
+
+    if(!Number.isInteger(count)||count<1||count>30){
+      showError("Please enter a valid number of elements between 1 and 30.");
+      return;
+    }
+
+    if(!Number.isFinite(base)){
+      showError("Please enter a valid numeric base address.");
+      return;
+    }
+
+    if(!Number.isFinite(size)||size<=0){
+      showError("Element size must be a positive number.");
+      return;
+    }
+
+    const values=[];
+    for(let i=0;i<count;i++){
+      const input=$(`v1d_${i}`);
+      if(!input || input.value.trim()===""){
+        showError(`Please enter a value for A[${i}].`);
+        return;
+      }
+      values.push(input.value.trim());
+    }
+
+    state.data=values;
+    state.rows=1;
+    state.cols=values.length;
+    state.base=base;
+    state.size=size;
+  }else{
+    const rows=Number($("twoDRows").value);
+    const cols=Number($("twoDCols").value);
+    const base=Number($("twoDBase").value);
+    const size=Number($("twoDSize").value);
+
+    if(!Number.isInteger(rows)||rows<1||rows>15){
+      showError("Please enter a valid number of rows between 1 and 15.");
+      return;
+    }
+
+    if(!Number.isInteger(cols)||cols<1||cols>15){
+      showError("Please enter a valid number of columns between 1 and 15.");
+      return;
+    }
+
+    if(!Number.isFinite(base)){
+      showError("Please enter a valid numeric base address.");
+      return;
+    }
+
+    if(!Number.isFinite(size)||size<=0){
+      showError("Element size must be positive.");
+      return;
+    }
+
+    const matrix=[];
+
+    for(let r=0;r<rows;r++){
+      const row=[];
+      for(let c=0;c<cols;c++){
+        const input=$(`v2d_${r}_${c}`);
+        if(!input || input.value.trim()===""){
+          showError(`Please enter a value for A[${r}][${c}].`);
+          return;
+        }
+        row.push(input.value.trim());
+      }
+      matrix.push(row);
+    }
+
+    state.data=matrix;
+    state.rows=rows;
+    state.cols=cols;
+    state.base=base;
+    state.size=size;
+  }
+
+  state.originalData=state.type==="1D"
+    ? state.data.slice()
+    : clone2D(state.data);
+
+  state.currentOperation=null;
+  stopSimulation();
+  renderArrayPage();
+  goTo("array");
+}
+
+/* =========================================================
+   ARRAY DISPLAY
+========================================================= */
+
+function renderArrayPage(){
+  const total=state.type==="1D"
+    ? state.data.length
+    : state.data.flat().length;
+
+  $("arraySummary").innerHTML=`
+    <div class="summary-grid">
+      <div class="summary-item">
+        <small>Array Type</small>
+        <strong>${state.type}</strong>
+      </div>
+      <div class="summary-item">
+        <small>Total Elements</small>
+        <strong>${total}</strong>
+      </div>
+      <div class="summary-item">
+        <small>Dimensions</small>
+        <strong>${state.type==="1D" ? `[${state.data.length}]` : `${state.rows} × ${state.cols}`}</strong>
+      </div>
+      <div class="summary-item">
+        <small>Element Size</small>
+        <strong>${state.size} bytes</strong>
+      </div>
+      <div class="summary-item">
+        <small>Base Address</small>
+        <strong>${state.base}</strong>
+      </div>
+    </div>
+  `;
+
+  $("arrayDisplay").innerHTML=renderArrayHTML(state.data);
+}
+
+function renderArrayHTML(data,classes={}){
+  if(state.type==="1D"){
+    return `
+      <div class="array-wrapper">
+        <div class="array-heading">
+          <strong>One-Dimensional Array</strong>
+          <span class="array-note">Each box represents one element</span>
+        </div>
+        <div class="array-scroll">
+          <div class="array-row">
+            ${data.map((v,i)=>`
+              <div class="cell-column">
+                <div class="cell-label">A[${i}]</div>
+                <div class="array-cell ${classes[i]||""}">
+                  <span class="value ${autoFontClass(v)}">${formatValue(v)}</span>
+                </div>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  const rows = data.length;
+  const html = data.map((row,r)=>`
+    <div class="matrix-row">
+      <div class="matrix-label">R${r}</div>
+      ${row.map((v,c)=>{
+        const flat=r*state.cols+c;
+        return `
+          <div class="cell-column matrix-cell">
+            <div class="cell-label">A[${r}][${c}]</div>
+            <div class="array-cell ${classes[flat]||""}">
+              <span class="value ${autoFontClass(v)}">${formatValue(v)}</span>
+            </div>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `).join("");
+
+  return `
+    <div class="array-wrapper">
+      <div class="array-heading">
+        <strong>Two-Dimensional Array</strong>
+        <span class="array-note">Row-major order • ${rows} row(s) × ${state.cols} column(s)</span>
+      </div>
+      <div class="array-scroll matrix">${html}</div>
+    </div>
+  `;
+}
+
+/* =========================================================
+   NAVIGATION BUTTONS
+========================================================= */
+
+$("backSetupBtn").addEventListener("click",()=>goTo("setup"));
+
+$("continueOpsBtn").addEventListener("click",()=>goTo("operations"));
+
+$("backArrayBtn").addEventListener("click",()=>{
+  renderArrayPage();
+  goTo("array");
+});
+
+$("backOpsBtn").addEventListener("click",()=>{
+  stopSimulation();
+  goTo("operations");
+});
+
+$("resetOperationBtn").addEventListener("click",()=>{
+  stopSimulation();
+  if(state.currentOperation) openOperation(state.currentOperation);
+});
+
+["newArrayFromArray","newArrayFromOps","newArrayFromSim"].forEach(id=>{
+  $(id).addEventListener("click",resetEverything);
+});
+
+function resetEverything(){
+  stopSimulation();
+
+  state.type="1D";
+  state.data=[];
+  state.rows=0;
+  state.cols=0;
+  state.base=0;
+  state.size=1;
+  state.currentOperation=null;
+
+  $("oneDCount").value="";
+  $("oneDBase").value="";
+  $("oneDSize").value="";
+  $("twoDRows").value="";
+  $("twoDCols").value="";
+  $("twoDBase").value="";
+  $("twoDSize").value="";
+  $("oneDValues").innerHTML="";
+  $("twoDValues").innerHTML="";
+  clearError();
+
+  $("oneDChoice").classList.add("selected");
+  $("twoDChoice").classList.remove("selected");
+  $("oneDSetup").style.display="";
+  $("twoDSetup").style.display="none";
+
+  goTo("setup");
+}
+
+/* =========================================================
+   OPERATION MENU
+========================================================= */
+
+document.querySelectorAll(".operation-card").forEach(card=>{
+  card.addEventListener("click",()=>{
+    openOperation(card.dataset.operation);
+  });
+});
+
+function openOperation(op){
+  stopSimulation();
+  state.currentOperation=op;
+
+  const titles={
+    address:"⌖ Array Address Calculation",
+    insert:"＋ Array Insertion",
+    delete:"− Array Deletion",
+    linear:"⌕ Linear Search",
+    binary:"◇ Binary Search"
+  };
+
+  const subtitles={
+    address:"Calculate the memory address of a selected array element.",
+    insert:"Insert one individual element and visualize the shifting process.",
+    delete:"Delete one individual element and visualize the shifting process.",
+    linear:"Search through the array one element at a time.",
+    binary:"Search sorted data by repeatedly reducing the search range."
+  };
+
+  $("operationTitle").textContent=titles[op];
+  $("operationSubtitle").textContent=subtitles[op];
+
+  const builders={
+    address:buildAddress,
+    insert:buildInsertion,
+    delete:buildDeletion,
+    linear:buildLinearSearch,
+    binary:buildBinarySearch
+  };
+
+  builders[op]();
+  goTo("simulation");
+}
+
+/* =========================================================
+   SIMULATION CONTROLS
+========================================================= */
+
+function simulationControls(){
+  return `
+    <div class="nav-row">
+      <button class="btn primary" id="runSim">▶ Run Simulation</button>
+      <button class="btn gold" id="nextStep">→ Next Step</button>
+      <button class="btn" id="pauseSim">⏸ Pause</button>
+    </div>
+  `;
+}
+
+function attachSimulationControls(){
+  $("runSim").addEventListener("click",runSimulation);
+  $("nextStep").addEventListener("click",nextStep);
+  $("pauseSim").addEventListener("click",pauseSimulation);
+}
+
+function prepareSimulation(steps,renderStep,finish){
+  stopSimulation();
+
+  state.simulation.steps=steps;
+  state.simulation.index=-1;
+  state.simulation.paused=false;
+  state.simulation.running=false;
+
+  state.simulation.renderStep=renderStep;
+  state.simulation.finish=finish;
+}
+
+function nextStep(){
+  if(!state.simulation.steps.length)return;
+
+  if(state.simulation.index < state.simulation.steps.length-1){
+    state.simulation.index++;
+    state.simulation.renderStep(
+      state.simulation.steps[state.simulation.index],
+      state.simulation.index
+    );
+
+    if(state.simulation.index===state.simulation.steps.length-1){
+      if(state.simulation.finish)state.simulation.finish();
+    }
+  }
+}
+
+function runSimulation(){
+  if(!state.simulation.steps.length)return;
+
+  stopSimulation(false);
+  state.simulation.running=true;
+  state.simulation.paused=false;
+
+  const tick=()=>{
+    if(!state.simulation.running || state.simulation.paused)return;
+
+    if(state.simulation.index < state.simulation.steps.length-1){
+      nextStep();
+      state.simulation.timer=setTimeout(tick,800);
+    }else{
+      state.simulation.running=false;
+    }
+  };
+
+  tick();
+}
+
+function pauseSimulation(){
+  state.simulation.paused=true;
+  state.simulation.running=false;
+  if(state.simulation.timer)clearTimeout(state.simulation.timer);
+
+  const status=$("simStatus");
+  if(status){
+    status.className="status";
+    status.innerHTML=`<span class="status-dot"></span> Simulation paused`;
+  }
+}
+
+function stopSimulation(clear=true){
+  if(state.simulation.timer)clearTimeout(state.simulation.timer);
+
+  state.simulation.timer=null;
+  state.simulation.running=false;
+  state.simulation.paused=false;
+
+  if(clear){
+    state.simulation.steps=[];
+    state.simulation.index=-1;
+  }
+}
+
+/* =========================================================
+   ADDRESS CALCULATION
+========================================================= */
+
+function buildAddress(){
+  const is1=state.type==="1D";
+
+  $("operationContent").innerHTML=`
+    <div class="operation-layout">
+      <div class="operation-main">
+        <h3>Choose an Element</h3>
+
+        <div class="form-grid">
+          ${is1 ? `
+            <div class="field">
+              <label>Index (i)</label>
+              <input id="addressIndex" type="number" min="0" max="${state.data.length-1}" placeholder="Example: 2">
+            </div>
+          ` : `
+            <div class="field">
+              <label>Row (i)</label>
+              <input id="addressRow" type="number" min="0" max="${state.data.length-1}" placeholder="Example: 1">
+            </div>
+            <div class="field">
+              <label>Column (j)</label>
+              <input id="addressCol" type="number" min="0" max="${state.cols-1}" placeholder="Example: 2">
+            </div>
+          `}
+        </div>
+
+        <div id="addressError" class="error"></div>
+
+        <div class="divider"></div>
+
+        <div id="addressPreview">
+          ${renderArrayHTML(state.data)}
+        </div>
+
+        ${simulationControls()}
+
+        <div id="simStatus" class="status">
+          <span class="status-dot"></span> Ready
+        </div>
+
+        <div id="addressSteps" class="steps"></div>
+
+        <div id="addressResult" class="result"></div>
+      </div>
+
+      <div class="info-card">
+        <h3>What It Does</h3>
+        <p>Array address calculation determines where a particular element is located in memory.</p>
+        <h3>Formula</h3>
+        <div class="formula">
+          ${is1
+            ? "Address(A[i]) = Base + (i × Size)"
+            : "Address(A[i][j]) = Base + (((i × Columns) + j) × Size)"}
+        </div>
+        <h3>Complexity</h3>
+        <p><strong>O(1)</strong> — direct calculation.</p>
+      </div>
+    </div>
+  `;
+
+  attachSimulationControls();
+
+  $("runSim").addEventListener("click",()=>{});
+  $("nextStep").addEventListener("click",()=>{});
+
+  prepareAddressSimulation(is1);
+}
+
+function prepareAddressSimulation(is1){
+  const error=$("addressError");
+
+  function validate(){
+    if(is1){
+      const i=Number($("addressIndex").value);
+      if(!Number.isInteger(i)||i<0||i>=state.data.length){
+        error.textContent="Please enter a valid array index.";
+        error.classList.add("show");
+        return null;
+      }
+      return {i};
+    }
+
+    const r=Number($("addressRow").value);
+    const c=Number($("addressCol").value);
+
+    if(!Number.isInteger(r)||r<0||r>=state.data.length){
+      error.textContent="Please enter a valid row.";
+      error.classList.add("show");
+      return null;
+    }
+
+    if(!Number.isInteger(c)||c<0||c>=state.cols){
+      error.textContent="Please enter a valid column.";
+      error.classList.add("show");
+      return null;
+    }
+
+    return {r,c};
+  }
+
+  function generate(){
+    const selected=validate();
+    if(!selected)return false;
+
+    error.classList.remove("show");
+
+    const steps=[];
+
+    if(is1){
+      const i=selected.i;
+      const value=state.data[i];
+      const offset=i*state.size;
+      const address=state.base+offset;
+
+      steps.push({
+        title:"Select the element",
+        text:`Selected A[${i}] = ${value}`,
+        index:i
+      });
+
+      steps.push({
+        title:"Apply the formula",
+        text:`Address(A[i]) = Base Address + (Index × Element Size)`,
+        index:i
+      });
+
+      steps.push({
+        title:"Substitute values",
+        text:`Address(A[${i}]) = ${state.base} + (${i} × ${state.size})`,
+        index:i
+      });
+
+      steps.push({
+        title:"Calculate the offset",
+        text:`${i} × ${state.size} = ${offset}`,
+        index:i
+      });
+
+      steps.push({
+        title:"Final calculation",
+        text:`${state.base} + ${offset} = ${address}`,
+        index:i,
+        final:true,
+        address
+      });
+    }else{
+      const r=selected.r;
+      const c=selected.c;
+      const value=state.data[r][c];
+      const flat=r*state.cols+c;
+      const offset=flat*state.size;
+      const address=state.base+offset;
+
+      steps.push({
+        title:"Select the element",
+        text:`Selected A[${r}][${c}] = ${value}`,
+        index:flat
+      });
+
+      steps.push({
+        title:"Apply the row-major formula",
+        text:"Address(A[i][j]) = Base + (((i × Columns) + j) × Size)",
+        index:flat
+      });
+
+      steps.push({
+        title:"Calculate logical position",
+        text:`(${r} × ${state.cols}) + ${c} = ${flat}`,
+        index:flat
+      });
+
+      steps.push({
+        title:"Calculate the offset",
+        text:`${flat} × ${state.size} = ${offset}`,
+        index:flat
+      });
+
+      steps.push({
+        title:"Final calculation",
+        text:`${state.base} + ${offset} = ${address}`,
+        index:flat,
+        final:true,
+        address
+      });
+    }
+
+    prepareSimulation(
+      steps,
+      (step,idx)=>renderAddressStep(step,idx),
+      ()=>{
+        const final=steps[steps.length-1];
+        const result=$("addressResult");
+        result.classList.add("show");
+        result.innerHTML=`
+          <h3>✦ FINAL RESULT</h3>
+          <div class="result-value">FINAL ADDRESS: ${final.address}</div>
+          <p>Address calculation completed in O(1) time.</p>
+        `;
+      }
+    );
+
+    renderAddressStep(steps[0],0);
+    return true;
+  }
+
+  $("runSim").onclick=()=>{
+    if(state.simulation.steps.length===0)generate();
+    runSimulation();
+  };
+
+  $("nextStep").onclick=()=>{
+    if(state.simulation.steps.length===0){
+      if(!generate())return;
+    }
+    nextStep();
+  };
+}
+
+function renderAddressStep(step,idx){
+  const classes={};
+  if(step.index!==undefined)classes[step.index]="selected";
+
+  $("addressPreview").innerHTML=renderArrayHTML(state.data,classes);
+
+  const stepsBox=$("addressSteps");
+  stepsBox.innerHTML=state.simulation.steps
+    .slice(0,idx+1)
+    .map((s,i)=>`
+      <div class="step ${i===idx?"active":""}">
+        <strong>Step ${i+1}: ${s.title}</strong>
+        <br>${escapeHTML(s.text)}
+      </div>
+    `).join("");
+
+  $("simStatus").innerHTML=`
+    <span class="status-dot"></span>
+    ${step.final?"Calculation complete":"Calculating address..."}
+  `;
+}
+
+/* =========================================================
+   INSERTION
+========================================================= */
+
+function buildInsertion(){
+  $("operationContent").innerHTML=`
+    <div class="operation-layout">
+      <div class="operation-main">
+        <h3>${state.type==="1D"?"Insert One Element":"Insert One Element in Row-Major Order"}</h3>
+
+        <div class="form-grid three">
+          <div class="field">
+            <label>Value to Insert</label>
+            <input id="insertValue" type="text" placeholder="Example: mango">
+          </div>
+          <div class="field">
+            <label>${state.type==="1D"?"Insertion Index":"Insertion Row"}</label>
+            <input id="insertPos1" type="number" min="0" placeholder="0">
+          </div>
+          ${state.type==="2D"?`
+            <div class="field">
+              <label>Insertion Column</label>
+              <input id="insertPos2" type="number" min="0" placeholder="0">
+            </div>
+          `:""}
+        </div>
+
+        <div id="insertError" class="error"></div>
+
+        <div class="divider"></div>
+
+        <div id="insertVisual">${renderArrayHTML(state.data)}</div>
+
+        ${simulationControls()}
+
+        <div id="simStatus" class="status">
+          <span class="status-dot"></span> Ready
+        </div>
+
+        <div id="insertSteps" class="steps"></div>
+
+        <div id="insertResult" class="result"></div>
+      </div>
+
+      <div class="info-card">
+        <h3>What It Does</h3>
+        <p>Insertion places one new element into the logical array sequence.</p>
+        <h3>Logic</h3>
+        <ul>
+          <li>Choose the insertion position.</li>
+          <li>Move later elements one position to the right.</li>
+          <li>Place the new value.</li>
+        </ul>
+        <h3>Complexity</h3>
+        <p>Worst case: <strong>O(n)</strong></p>
+      </div>
+    </div>
+  `;
+
+  attachSimulationControls();
+
+  prepareInsertionSimulation();
+}
+
+function prepareInsertionSimulation(){
+  const error=$("insertError");
+
+  function generate(){
+    const value=$("insertValue").value.trim();
+
+    if(value===""){
+      error.textContent="Please enter a value to insert.";
+      error.classList.add("show");
+      return false;
+    }
+
+    let logicalIndex;
+
+    if(state.type==="1D"){
+      logicalIndex=Number($("insertPos1").value);
+
+      if(!Number.isInteger(logicalIndex)||logicalIndex<0||logicalIndex>state.data.length){
+        error.textContent=`Insertion index must be between 0 and ${state.data.length}.`;
+        error.classList.add("show");
+        return false;
+      }
+    }else{
+      const r=Number($("insertPos1").value);
+      const c=Number($("insertPos2").value);
+
+      if(!Number.isInteger(r)||r<0){
+        error.textContent="Please enter a valid row.";
+        error.classList.add("show");
+        return false;
+      }
+
+      if(!Number.isInteger(c)||c<0||c>=state.cols){
+        error.textContent=`Column must be between 0 and ${state.cols-1}.`;
+        error.classList.add("show");
+        return false;
+      }
+
+      if(r>Math.ceil(flattenData().length/state.cols) || (r===Math.ceil(flattenData().length/state.cols)&&c!==0)){
+        error.textContent="That insertion position is outside the current row-major sequence.";
+        error.classList.add("show");
+        return false;
+      }
+
+      logicalIndex=r*state.cols+c;
+
+      if(logicalIndex>flattenData().length){
+        error.textContent="That position is beyond the current array.";
+        error.classList.add("show");
+        return false;
+      }
+    }
+
+    error.classList.remove("show");
+
+    const before=flattenData();
+    const after=before.slice();
+    after.splice(logicalIndex,0,value);
+
+    const steps=[];
+
+    steps.push({
+      title:"Original array",
+      text:`The original sequence contains ${before.length} element(s).`,
+      data:before.slice()
+    });
+
+    for(let i=before.length-1;i>=logicalIndex;i--){
+      const temp=before.slice();
+      temp.splice(i,1);
+      temp.splice(i+1,0,before[i]);
+
+      steps.push({
+        title:"Shift element",
+        text:`Move element from logical index ${i} to index ${i+1}.`,
+        data:temp,
+        shift:i+1
+      });
+    }
+
+    steps.push({
+      title:"Insert new element",
+      text:`Insert "${value}" at logical index ${logicalIndex}.`,
+      data:after.slice(),
+      inserted:logicalIndex,
+      final:true
+    });
+
+    prepareSimulation(
+      steps,
+      (step,idx)=>renderInsertionStep(step,idx),
+      ()=>{
+        $("insertResult").classList.add("show");
+        $("insertResult").innerHTML=`
+          <h3>✦ FINAL RESULT</h3>
+          <div class="result-value">FINAL ARRAY: ${escapeHTML(JSON.stringify(after))}</div>
+          <p>One element was inserted at logical index ${logicalIndex}.</p>
+        `;
+      }
+    );
+
+    renderInsertionStep(steps[0],0);
+    return true;
+  }
+
+  $("runSim").onclick=()=>{
+    if(state.simulation.steps.length===0){
+      if(!generate())return;
+    }
+    runSimulation();
+  };
+
+  $("nextStep").onclick=()=>{
+    if(state.simulation.steps.length===0){
+      if(!generate())return;
+    }
+    nextStep();
+  };
+}
+
+function renderInsertionStep(step,idx){
+  const classes={};
+
+  if(step.shift!==undefined)classes[step.shift]="shifted";
+  if(step.inserted!==undefined)classes[step.inserted]="inserted";
+
+  $("insertVisual").innerHTML=renderFlatAsCurrent(step.data,classes);
+
+  $("insertSteps").innerHTML=state.simulation.steps
+    .slice(0,idx+1)
+    .map((s,i)=>`
+      <div class="step ${i===idx?"active":""}">
+        <strong>Step ${i+1}: ${s.title}</strong>
+        <br>${escapeHTML(s.text)}
+      </div>
+    `).join("");
+
+  $("simStatus").innerHTML=`
+    <span class="status-dot"></span>
+    ${step.final?"Simulation complete":"Shifting element..."}
+  `;
+}
+
+function renderFlatAsCurrent(flat,classes={}){
+  if(state.type==="1D"){
+    return renderArrayHTML(flat,classes);
+  }
+
+  const matrix=[];
+  for(let i=0;i<flat.length;i+=state.cols){
+    matrix.push(flat.slice(i,i+state.cols));
+  }
+
+  return renderMatrixWithFlatClasses(matrix,classes);
+}
+
+/* =========================================================
+   DELETION
+========================================================= */
+
+function buildDeletion(){
+  $("operationContent").innerHTML=`
+    <div class="operation-layout">
+      <div class="operation-main">
+        <h3>Delete One Individual Element</h3>
+
+        <div class="form-grid">
+          <div class="field">
+            <label>${state.type==="1D"?"Index":"Row"}</label>
+            <input id="deletePos1" type="number" min="0" placeholder="0">
+          </div>
+
+          ${state.type==="2D"?`
+            <div class="field">
+              <label>Column</label>
+              <input id="deletePos2" type="number" min="0" placeholder="0">
+            </div>
+          `:""}
+        </div>
+
+        <div id="deleteError" class="error"></div>
+
+        <div class="divider"></div>
+
+        <div id="deleteVisual">${renderArrayHTML(state.data)}</div>
+
+        ${simulationControls()}
+
+        <div id="simStatus" class="status">
+          <span class="status-dot"></span> Ready
+        </div>
+
+        <div id="deleteSteps" class="steps"></div>
+
+        <div id="deleteResult" class="result"></div>
+      </div>
+
+      <div class="info-card">
+        <h3>What It Does</h3>
+        <p>Deletion removes one element and shifts later elements toward the empty position.</p>
+        <h3>Logic</h3>
+        <ul>
+          <li>Select one element.</li>
+          <li>Move following elements one position left.</li>
+          <li>Remove the final duplicate position.</li>
+        </ul>
+        <h3>Complexity</h3>
+        <p>Worst case: <strong>O(n)</strong></p>
+      </div>
+    </div>
+  `;
+
+  attachSimulationControls();
+  prepareDeletionSimulation();
+}
+
+function prepareDeletionSimulation(){
+  const error=$("deleteError");
+
+  function generate(){
+    let index;
+
+    if(state.type==="1D"){
+      index=Number($("deletePos1").value);
+
+      if(!Number.isInteger(index)||index<0||index>=state.data.length){
+        error.textContent=`Index must be between 0 and ${state.data.length-1}.`;
+        error.classList.add("show");
+        return false;
+      }
+    }else{
+      const r=Number($("deletePos1").value);
+      const c=Number($("deletePos2").value);
+
+      if(!Number.isInteger(r)||r<0||r>=state.data.length){
+        error.textContent="Please enter a valid row.";
+        error.classList.add("show");
+        return false;
+      }
+
+      if(!Number.isInteger(c)||c<0||c>=state.cols){
+        error.textContent=`Column must be between 0 and ${state.cols-1}.`;
+        error.classList.add("show");
+        return false;
+      }
+
+      index=r*state.cols+c;
+
+      if(index>=flattenData().length){
+        error.textContent="That cell does not currently contain an element.";
+        error.classList.add("show");
+        return false;
+      }
+    }
+
+    error.classList.remove("show");
+
+    const before=flattenData();
+    const deleted=before[index];
+    const after=before.slice();
+    after.splice(index,1);
+
+    const steps=[];
+
+    steps.push({
+      title:"Select element",
+      text:`Selected logical index ${index} containing "${deleted}".`,
+      data:before.slice(),
+      selected:index
+    });
+
+    for(let i=index;i<before.length-1;i++){
+      const temp=before.slice();
+
+      temp[i]=temp[i+1];
+
+      steps.push({
+        title:"Shift element",
+        text:`Move element from logical index ${i+1} to index ${i}.`,
+        data:temp,
+        shift:i
+      });
+    }
+
+    steps.push({
+      title:"Complete deletion",
+      text:`Remove the final duplicate position after shifting.`,
+      data:after.slice(),
+      deleted:index,
+      final:true
+    });
+
+    prepareSimulation(
+      steps,
+      (step,idx)=>renderDeletionStep(step,idx),
+      ()=>{
+        $("deleteResult").classList.add("show");
+        $("deleteResult").innerHTML=`
+          <h3>✦ FINAL RESULT</h3>
+          <div class="result-value">FINAL ARRAY: ${escapeHTML(JSON.stringify(after))}</div>
+          <p>Deleted element: <strong>${escapeHTML(deleted)}</strong></p>
+        `;
+      }
+    );
+
+    renderDeletionStep(steps[0],0);
+    return true;
+  }
+
+  $("runSim").onclick=()=>{
+    if(state.simulation.steps.length===0){
+      if(!generate())return;
+    }
+    runSimulation();
+  };
+
+  $("nextStep").onclick=()=>{
+    if(state.simulation.steps.length===0){
+      if(!generate())return;
+    }
+    nextStep();
+  };
+}
+
+function renderDeletionStep(step,idx){
+  const classes={};
+
+  if(step.selected!==undefined)classes[step.selected]="selected";
+  if(step.shift!==undefined)classes[step.shift]="shifted";
+  if(step.deleted!==undefined)classes[step.deleted]="deleted";
+
+  $("deleteVisual").innerHTML=renderFlatAsCurrent(step.data,classes);
+
+  $("deleteSteps").innerHTML=state.simulation.steps
+    .slice(0,idx+1)
+    .map((s,i)=>`
+      <div class="step ${i===idx?"active":""}">
+        <strong>Step ${i+1}: ${s.title}</strong>
+        <br>${escapeHTML(s.text)}
+      </div>
+    `).join("");
+
+  $("simStatus").innerHTML=`
+    <span class="status-dot"></span>
+    ${step.final?"Simulation complete":"Shifting element..."}
+  `;
+}
+
+/* =========================================================
+   MATRIX RENDERER
+========================================================= */
+
+function renderMatrixWithFlatClasses(matrix,classes={}){
+  const html=matrix.map((row,r)=>`
+    <div class="matrix-row">
+      <div class="matrix-label">R${r}</div>
+      ${row.map((v,c)=>{
+        const flat=r*state.cols+c;
+        return `
+          <div class="cell-column matrix-cell">
+            <div class="cell-label">A[${r}][${c}]</div>
+            <div class="array-cell ${classes[flat]||""}">
+              <span class="value ${autoFontClass(v)}">${formatValue(v)}</span>
+            </div>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `).join("");
+
+  return `
+    <div class="array-wrapper">
+      <div class="array-heading">
+        <strong>Two-Dimensional Array • Row-Major Representation</strong>
+      </div>
+      <div class="array-scroll matrix">${html}</div>
+    </div>
+  `;
+}
+
+/* =========================================================
+   LINEAR SEARCH
+========================================================= */
+
+function buildLinearSearch(){
+  $("operationContent").innerHTML=`
+    <div class="operation-layout">
+      <div class="operation-main">
+        <h3>Sequential Search</h3>
+
+        <div class="form-grid">
+          <div class="field">
+            <label>Target Value</label>
+            <input id="linearTarget" type="text" placeholder="Example: apple">
+          </div>
+        </div>
+
+        <div id="linearError" class="error"></div>
+
+        <div class="divider"></div>
+
+        <div id="linearVisual">${renderArrayHTML(state.data)}</div>
+
+        ${simulationControls()}
+
+        <div id="simStatus" class="status">
+          <span class="status-dot"></span> Ready
+        </div>
+
+        <div class="steps" id="linearSteps"></div>
+
+        <div class="result" id="linearResult"></div>
+      </div>
+
+      <div class="info-card">
+        <h3>How It Works</h3>
+        <p>Linear Search checks elements sequentially from the beginning until the target is found or the array ends.</p>
+        <h3>Algorithm</h3>
+        <p>Compare target with each element in row-major order.</p>
+        <h3>Complexity</h3>
+        <p>Best: <strong>O(1)</strong></p>
+        <p>Average: <strong>O(n)</strong></p>
+        <p>Worst: <strong>O(n)</strong></p>
+      </div>
+    </div>
+  `;
+
+  attachSimulationControls();
+  prepareLinearSearch();
+}
+
+function prepareLinearSearch(){
+  const error=$("linearError");
+
+  function generate(){
+    const target=$("linearTarget").value.trim();
+
+    if(target===""){
+      error.textContent="Please enter a target value.";
+      error.classList.add("show");
+      return false;
+    }
+
+    error.classList.remove("show");
+
+    const arr=flattenData();
+    const steps=[];
+    let found=-1;
+
+    for(let i=0;i<arr.length;i++){
+      const equal=valueEqual(arr[i],target);
+
+      steps.push({
+        index:i,
+        value:arr[i],
+        equal,
+        comparison:i+1,
+        final:equal
+      });
+
+      if(equal){
+        found=i;
+        break;
+      }
+    }
+
+    prepareSimulation(
+      steps,
+      (step,idx)=>renderLinearStep(step,idx,target),
+      ()=>{
+        const result=$("linearResult");
+        result.classList.add("show");
+
+        if(found>=0){
+          const location=state.type==="1D"
+            ? `FOUND AT INDEX: ${found}`
+            : (()=>{const p=getRowCol(found);return `FOUND AT ROW ${p.row}, COLUMN ${p.col}`})();
+
+          result.innerHTML=`
+            <h3>✦ FINAL RESULT</h3>
+            <div class="result-value">✓ ${location}</div>
+            <p>Comparisons: ${found+1}</p>
+          `;
+        }else{
+          result.classList.add("bad");
+          result.innerHTML=`
+            <h3>FINAL RESULT</h3>
+            <div class="result-value">ELEMENT NOT FOUND</div>
+            <p>${arr.length} comparison(s) were performed.</p>
+          `;
+        }
+      }
+    );
+
+    if(steps.length)renderLinearStep(steps[0],0,target);
+    return true;
+  }
+
+  $("runSim").onclick=()=>{
+    if(state.simulation.steps.length===0){
+      if(!generate())return;
+    }
+    runSimulation();
+  };
+
+  $("nextStep").onclick=()=>{
+    if(state.simulation.steps.length===0){
+      if(!generate())return;
+    }
+    nextStep();
+  };
+}
+
+function renderLinearStep(step,idx,target){
+  const classes={};
+  classes[step.index]=step.equal?"found":"comparing";
+
+  $("linearVisual").innerHTML=renderFlatAsCurrent(flattenData(),classes);
+
+  $("linearSteps").innerHTML=state.simulation.steps
+    .slice(0,idx+1)
+    .map((s,i)=>{
+      const pos=state.type==="1D"
+        ? `A[${s.index}]`
+        : (()=>{const p=getRowCol(s.index);return `A[${p.row}][${p.col}]`})();
+      return `
+        <div class="step ${i===idx?"active":""}">
+          <strong>Step ${i+1}: Compare ${pos}</strong>
+          <br>
+          ${escapeHTML(String(s.value))} ${s.equal?"=":"≠"} ${escapeHTML(target)}
+          ${s.equal?" → Match found!":" → Continue searching."}
+        </div>
+      `;
+    }).join("");
+
+  $("simStatus").innerHTML=`
+    <span class="status-dot"></span>
+    ${step.equal?"Element found!":"Comparing..."}
+  `;
+}
+
+/* =========================================================
+   BINARY SEARCH
+========================================================= */
+
+function buildBinarySearch(){
+  const arr=flattenData();
+  const sorted=isSorted(arr);
+
+  $("operationContent").innerHTML=`
+    <div class="operation-layout">
+      <div class="operation-main">
+        <h3>Binary Search</h3>
+
+        <div class="status ${sorted?"success":""}">
+          <span class="status-dot"></span>
+          ${
+            sorted
+              ? "The current array is sorted and ready for Binary Search."
+              : "Binary Search requires sorted data."
+          }
+        </div>
+
+        <div id="binarySortArea">
+          ${
+            !sorted
+            ? `
+              <button class="btn gold" id="sortCopyBtn">Sort a Copy and Continue</button>
+              <p class="help" style="margin-top:10px">
+                The original array will remain unchanged.
+              </p>
+            `
+            : `
+              <div class="field">
+                <label>Target Value</label>
+                <input id="binaryTarget" type="text" placeholder="Example: 30">
+              </div>
+            `
+          }
+        </div>
+
+        <div id="binarySearchArea" style="${sorted?"":"display:none"}">
+          ${!sorted?`
+            <div class="form-grid" style="margin-top:15px">
+              <div class="field">
+                <label>Target Value</label>
+                <input id="binaryTarget" type="text" placeholder="Example: 30">
+              </div>
+            </div>
+          `:""}
+
+          <div id="binaryError" class="error"></div>
+
+          <div class="divider"></div>
+
+          <div id="binaryVisual"></div>
+
+          ${simulationControls()}
+
+          <div id="simStatus" class="status">
+            <span class="status-dot"></span> Ready
+          </div>
+
+          <div class="steps" id="binarySteps"></div>
+
+          <div class="result" id="binaryResult"></div>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <h3>How It Works</h3>
+        <p>Binary Search repeatedly divides a sorted search range into smaller parts.</p>
+        <h3>Markers</h3>
+        <p><strong>LOW</strong> = first possible position</p>
+        <p><strong>MID</strong> = middle position</p>
+        <p><strong>HIGH</strong> = last possible position</p>
+        <h3>Complexity</h3>
+        <p>Best: <strong>O(1)</strong></p>
+        <p>Average: <strong>O(log n)</strong></p>
+        <p>Worst: <strong>O(log n)</strong></p>
+      </div>
+    </div>
+  `;
+
+  if(!sorted){
+    $("sortCopyBtn").addEventListener("click",()=>{
+      const sortedCopy=flattenData().slice().sort(compareValues);
+      renderBinarySortedCopy(sortedCopy);
+    });
+    return;
+  }
+
+  attachSimulationControls();
+  prepareBinarySearch(flattenData());
+}
+
+function renderBinarySortedCopy(sortedCopy){
+  $("binarySortArea").innerHTML=`
+    <div class="status success">
+      <span class="status-dot"></span>
+      A sorted COPY has been created. Your original array is unchanged.
+    </div>
+
+    <div class="array-wrapper" style="margin:15px 0">
+      <div class="array-heading">
+        <strong>Sorted Copy Used for Binary Search</strong>
+      </div>
+      <div class="array-scroll">
+        <div class="array-row">
+          ${sortedCopy.map((v,i)=>`
+            <div class="cell-column">
+              <div class="cell-label">${state.type==="1D"?`A[${i}]`:`Logical ${i}`}</div>
+              <div class="array-cell">
+                <span class="value">${formatValue(v)}</span>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Target Value</label>
+      <input id="binaryTarget" type="text" placeholder="Example: 30">
+    </div>
+  `;
+
+  $("binarySearchArea").style.display="block";
+
+  $("binarySearchArea").innerHTML+=`
+    <div id="binaryError" class="error"></div>
+
+    <div class="divider"></div>
+
+    <div id="binaryVisual"></div>
+
+    ${simulationControls()}
+
+    <div id="simStatus" class="status">
+      <span class="status-dot"></span> Ready
+    </div>
+
+    <div class="steps" id="binarySteps"></div>
+
+    <div class="result" id="binaryResult"></div>
+  `;
+
+  attachSimulationControls();
+  prepareBinarySearch(sortedCopy);
+}
+
+function prepareBinarySearch(searchArray){
+  function generate(){
+    const target=$("binaryTarget").value.trim();
+    const error=$("binaryError");
+
+    if(target===""){
+      error.textContent="Please enter a target value.";
+      error.classList.add("show");
+      return false;
+    }
+
+    error.classList.remove("show");
+
+    let low=0;
+    let high=searchArray.length-1;
+    let found=-1;
+    const steps=[];
+
+    while(low<=high){
+      const mid=Math.floor((low+high)/2);
+      const cmp=compareValues(searchArray[mid],target);
+
+      steps.push({
+        low,
+        mid,
+        high,
+        value:searchArray[mid],
+        cmp,
+        final:false
+      });
+
+      if(cmp===0){
+        found=mid;
+        break;
+      }
+
+      if(cmp<0){
+        low=mid+1;
+      }else{
+        high=mid-1;
+      }
+    }
+
+    if(steps.length){
+      steps[steps.length-1].final=true;
+    }
+
+    prepareSimulation(
+      steps,
+      (step,idx)=>renderBinaryStep(step,idx,searchArray,target),
+      ()=>{
+        const result=$("binaryResult");
+        result.classList.add("show");
+
+        if(found>=0){
+          if(state.type==="1D"){
+            result.innerHTML=`
+              <h3>✦ FINAL RESULT</h3>
+              <div class="result-value">✓ FOUND AT INDEX: ${found}</div>
+              <p>Comparisons: ${steps.length}</p>
+            `;
+          }else{
+            const p=getRowCol(found);
+            result.innerHTML=`
+              <h3>✦ FINAL RESULT</h3>
+              <div class="result-value">✓ FOUND AT ROW ${p.row}, COLUMN ${p.col}</div>
+              <p>Logical index: ${found} • Comparisons: ${steps.length}</p>
+            `;
+          }
+        }else{
+          result.classList.add("bad");
+          result.innerHTML=`
+            <h3>FINAL RESULT</h3>
+            <div class="result-value">ELEMENT NOT FOUND</div>
+            <p>${steps.length} comparison(s) were performed.</p>
+          `;
+        }
+      }
+    );
+
+    if(steps.length)renderBinaryStep(steps[0],0,searchArray,target);
+    return true;
+  }
+
+  $("runSim").onclick=()=>{
+    if(state.simulation.steps.length===0){
+      if(!generate())return;
+    }
+    runSimulation();
+  };
+
+  $("nextStep").onclick=()=>{
+    if(state.simulation.steps.length===0){
+      if(!generate())return;
+    }
+    nextStep();
+  };
+}
+
+function renderBinaryStep(step,idx,arr,target){
+  const cells=arr.map((v,i)=>{
+    let cls="";
+
+    if(i<step.low || i>step.high)cls="out";
+    else if(i===step.mid)cls="mid";
+    else cls="range";
+
+    return `
+      <div class="marker-cell ${cls}">
+        <div class="marker-tag">
+          ${i===step.low?"LOW":""}
+          ${i===step.mid?(i===step.low?" LOW/MID":"MID"):""}
+          ${i===step.high?(i===step.mid?" HIGH":i===step.low?" HIGH":"HIGH"):""}
+        </div>
+        <span class="v">${formatValue(v)}</span>
+        <small>${state.type==="1D"
+          ?`[${i}]`
+          :`[${getRowCol(i).row}][${getRowCol(i).col}]`}</small>
+      </div>
+    `;
+  }).join("");
+
+  $("binaryVisual").innerHTML=`
+    <div class="array-wrapper binary-visual">
+      <div class="array-heading">
+        <strong>Current Search Range</strong>
+        <span class="array-note">
+          LOW = ${step.low} • MID = ${step.mid} • HIGH = ${step.high}
+        </span>
+      </div>
+      <div class="marker-row">${cells}</div>
+    </div>
+  `;
+
+  const direction=
+    step.cmp===0
+      ?"Match found."
+      :step.cmp<0
+        ?"Middle value is smaller than the target → search right."
+        :"Middle value is larger than the target → search left.";
+
+  const location=state.type==="1D"
+    ?`A[${step.mid}]`
+    :(()=>{
+      const p=getRowCol(step.mid);
+      return `A[${p.row}][${p.col}]`;
+    })();
+
+  $("binarySteps").innerHTML=state.simulation.steps
+    .slice(0,idx+1)
+    .map((s,i)=>`
+      <div class="step ${i===idx?"active":""}">
+        <strong>Step ${i+1}</strong><br>
+        LOW = ${s.low}, MID = ${s.mid}, HIGH = ${s.high}<br>
+        Compare ${location} = "${escapeHTML(s.value)}" with "${escapeHTML(target)}".
+        ${i===idx?`<br><strong>${direction}</strong>`:""}
+      </div>
+    `).join("");
+
+  $("simStatus").innerHTML=`
+    <span class="status-dot"></span>
+    ${step.cmp===0?"Element found!":"Comparing..."}
+  `;
+}
+
+/* =========================================================
+   FOOTER / INITIALIZATION
+========================================================= */
+
+render1DInputs();
+
+</script>
+</body>
+</html>
